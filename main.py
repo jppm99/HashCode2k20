@@ -32,9 +32,34 @@ class Library(object):
         self.AvgScore = avgScore
         self.ScoreList = []
         self.Processed = False
+        self.BooksSent = []
+
+        for i in range(len(self.BookList)):
+            self.BookDict.update({i: self.BookList[i]})
+        
+        {k: v for k, v in sorted(self.BookDict.items(), key=lambda item: item[1]).reverse()} #ordem descendente
 
         for x in range(ScoreCalcDivisions):
             self.ScoreList.append(calcScore(self, TotalDays-(x*(TotalDays/ScoreCalcDivisions))))
+
+    def chooseBooks(self, time): #time is the day of the signup start (day)
+        nBooks = self.DebitPerDay * (TotalDays - (time + self.SignupTime))
+        orderedKeysList = self.BookDict.keys()
+        nSent = 0
+        currBook = 0
+
+        while nSent < nBooks:
+            if ScannedBooks[currBook]:
+                currBook += 1
+            else:
+                self.BooksSent.append(currBook)
+                currBook += 1
+                nSent += 1
+
+        return self.BooksSent
+    
+    def getBooksSent(self):
+        return self.BooksSent
 
     def calcScore(self, time):
         if self.Processed:
