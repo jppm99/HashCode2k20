@@ -25,6 +25,9 @@ def getSortedDict(d):
 class Library(object):
 
     def __init__(self, id, count, signup, debit, books, avgScore):
+
+        global BookScores
+
         self.id = id
         self.BookCount = count
         self.SignupTime = signup
@@ -34,11 +37,12 @@ class Library(object):
         self.ScoreList = []
         self.Processed = False
         self.BooksSent = []
+        self.BookDict = {}
 
-        for i in range(len(self.BookList)):
-            self.BookDict.update({i: self.BookList[i]})
+        for i in self.BookList:
+            self.BookDict.update({i: BookScores[i]})
         
-        {k: v for k, v in sorted(self.BookDict.items(), key=lambda item: item[1]).reverse()} #ordem descendente
+        self.BookDict = {k: v for k, v in reversed(sorted(self.BookDict.items(), key=lambda item: item[1]))} #ordem descendente
 
         for x in range(int(ScoreCalcDivisions)):
             self.ScoreList.append(self.calcScore(TotalDays-(x*(TotalDays/ScoreCalcDivisions))))
@@ -129,10 +133,10 @@ class Solver(object):
             f.write(str(len(LibList)) + '\n')
             #f.write(' '.join([str(el) for el in reversed(self.PizzaIndexes)]))
             for i in range(len(LibList)):
-                BookList = Libraries[LibList[i]].getBooksSent()
-                f.write(LibList[i] + " " + len(BookList) + '\n')
+                BookList = self.Libraries[LibList[i]].getBooksSent()
+                f.write(str(LibList[i]) + " " + str(len(BookList)) + '\n')
                 for b in BookList:
-                    f.write(b + " ")
+                    f.write(str(b) + " ")
                 f.write('\n')
 
         return 0
@@ -186,7 +190,9 @@ class Solver(object):
             if lib is None:
                 break
             LibList.append(lib.id)
+            lib.chooseBooks(day)
             day += lib.getSignup()
+                
 
         return 0
     
@@ -229,7 +235,7 @@ def main():
 
     solver.solve()
 
-    solver.write()
+    solver.write(LibList)
 
 
 if __name__ == '__main__':
