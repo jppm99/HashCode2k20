@@ -124,10 +124,14 @@ class Solver(object):
                 self.Libraries.append(lib)
             
     def write(self):
-        print(str(self.TotalBooks), str(self.TotalLibraries), str(self.TotalDays))
-        printArrayInLine(self.BookScores)
-        for lib in self.Libraries:
-            lib.write()
+        path = 'output/' + self.filename + '.out'
+        with open(path, 'w') as f:
+            f.write(str(len(self.Libraries)) + '\n')
+            #f.write(' '.join([str(el) for el in reversed(self.PizzaIndexes)]))
+            for i in range(len(self.Libraries)):
+                #bonjour
+
+
         return 0
 
     def solve(self):
