@@ -98,6 +98,38 @@ class Solver(object):
 
     def solve_large(self):  # not exact, fast
         return 0
+    
+    def solve_b(self):
+        libraryScores = {}
+
+        for i in range(len(self.Libraries)):
+            score = 1000 - self.Libraries[i].SignupTime
+
+            for book in self.Libraries[i].BookList:
+                if ScannedBooks.count(book) == 1:
+                    score -= 1
+                else:
+                    ScannedBooks.append(book)
+
+        libraryScores[i] = score        
+
+        return reversed(sorted(libraryScores.values()))
+
+    def solve_d(self):
+        libraryNBooks = {}
+
+        for i in range(len(self.Libraries)):
+            bookCount = self.Libraries[i].BookCount
+
+            for book in self.Libraries[i].BookList:
+                if ScannedBooks.count(book) == 1:
+                    bookCount -= 1
+                else:
+                    ScannedBooks.append(book)
+        
+            libraryNBooks[i] = bookCount
+
+        return sorted(libraryNBooks.values())
 
 
 def main():
