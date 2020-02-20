@@ -24,7 +24,8 @@ def getSortedDict(d):
 
 class Library(object):
 
-    def __init__(self, count, signup, debit, books, avgScore):
+    def __init__(self, id, count, signup, debit, books, avgScore):
+        self.id = id
         self.BookCount = count
         self.SignupTime = signup
         self.DebitPerDay = debit
@@ -39,8 +40,8 @@ class Library(object):
         
         {k: v for k, v in sorted(self.BookDict.items(), key=lambda item: item[1]).reverse()} #ordem descendente
 
-        for x in range(ScoreCalcDivisions):
-            self.ScoreList.append(calcScore(self, TotalDays-(x*(TotalDays/ScoreCalcDivisions))))
+        for x in range(int(ScoreCalcDivisions)):
+            self.ScoreList.append(self.calcScore(TotalDays-(x*(TotalDays/ScoreCalcDivisions))))
 
     def chooseBooks(self, time): #time is the day of the signup start (day)
         nBooks = self.DebitPerDay * (TotalDays - (time + self.SignupTime))
@@ -62,10 +63,13 @@ class Library(object):
         return self.BooksSent
 
     def calcScore(self, time):
+
+        global TotalDays
+
         if self.Processed:
-            return 0
+            return -1000
         else:
-            return min(self.AvgScore * self.DebitPerDay * (time - self.SignupTime), self.AvgScore * self.BookCount)
+            return min(self.AvgScore * self.DebitPerDay * ((TotalDays - time) - self.SignupTime), self.AvgScore * self.BookCount)
 
     def write(self):
         print(self.BookCount, self.SignupTime, self.DebitPerDay)
@@ -91,9 +95,6 @@ class Solver(object):
         self.filename = filename
         self.get_input()
 
-    def total_score(self):
-        return 0
-
     def get_input(self):
 
         global TotalBooks, TotalLibraries, TotalDays
@@ -107,20 +108,19 @@ class Solver(object):
             for el in scoresLine:
                 BookScores.append(int(el))
                 ScannedBooks.append(False)
-            BookScores = [int(el) for el in f.readline().split()]
             for i in range(TotalLibraries):
                 [count, signup, debit] = [int(el) for el in f.readline().split()]
                 books = {}
 
                 scoreSum = 0
 
-                bookLine = f.readline().split()
+                bookLine = [int(el) for el in f.readline().split()]
                 for book in bookLine:
-                    books[book] = BookScores[book]
+                    books.update({book: BookScores[book]})
                     scoreSum += BookScores[book]
                 scoreAvg = scoreSum / len(books)
 
-                lib = Library(count, signup, debit, books, scoreAvg)
+                lib = Library(len(self.Libraries), count, signup, debit, books, scoreAvg)
                 self.Libraries.append(lib)
             
     def write(self, LibList):
@@ -138,12 +138,9 @@ class Solver(object):
         return 0
 
     def solve(self):
-        return solve_large(self)
 
-    def solve_small(self):  # exact, slow
-        return 0
-
-    def solve_large(self):  # not exact, fast
+        global TotalBooks, TotalLibraries, TotalDays, ScoreCalcDivisions
+        global TopLibraries, BookScores, ScannedBooks, LibList
 
         def selectBestLib(dic, time):
             bestLib = -1
@@ -154,20 +151,20 @@ class Solver(object):
                 if score > bestScore:
                     bestScore = score
                     bestLib = i
-            self.Libraries[bestLib].process()
+            
+            if bestScore > -1:
+                self.Libraries[bestLib].process()
+                return self.Libraries[bestLib]
 
-            return self.Libraries[bestLib]
-
-        global TotalBooks, TotalLibraries, TotalDays, ScoreCalcDivisions
-        global TopLibraries, BookScores, ScannedBooks, LibList
-
+            return None
+            
         DaysPerDiv = TotalDays # equals to 1 division (test run)
 
         ScoreCalcDivisions = TotalDays / DaysPerDiv
 
         dicts = []
 
-        for i in range(ScoreCalcDivisions):
+        for i in range(int(ScoreCalcDivisions)):
             time = i * DaysPerDiv
             divDict = {}
             for ind in range(len(self.Libraries)):
@@ -176,7 +173,7 @@ class Solver(object):
                     divDict = {k: v for k, v in sorted(divDict.items(), key=lambda item: item[i])}
                 else:
                     avg = self.Libraries[ind].calcScore(time)
-                    if divDict[divDict.keys()[-1]] < avg:
+                    if divDict.get(list(divDict.keys())[-1]).calcScore(time) < avg:
                         divDict.popitem()
                         divDict[ind] = self.Libraries[ind]
                         divDict = {k: v for k, v in sorted(divDict.items(), key=lambda item: item[i])}
@@ -184,9 +181,11 @@ class Solver(object):
             
         day = 0    
         while day < TotalDays:
-            index = round(day / DaysPerDiv) * DaysPerDiv
-            lib = selectBestLib(dicts[ind], time)
-            LibList.append(lib)
+            index = round(day // DaysPerDiv) * DaysPerDiv
+            lib = selectBestLib(dicts[index], time)
+            if lib is None:
+                break
+            LibList.append(lib.id)
             day += lib.getSignup()
 
         return 0
@@ -228,8 +227,7 @@ def main():
     solver = Solver(name)
     solver.get_input()
 
-    # solver.solve()
-    # print('Total Score:', solver.total_score())
+    solver.solve()
 
     solver.write()
 
