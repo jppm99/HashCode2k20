@@ -123,14 +123,17 @@ class Solver(object):
                 lib = Library(count, signup, debit, books, scoreAvg)
                 self.Libraries.append(lib)
             
-    def write(self):
-        path = 'output/' + self.filename + '.out'
+    def write(self, LibList):
+        path = 'output/' + self.filename
         with open(path, 'w') as f:
-            f.write(str(len(self.Libraries)) + '\n')
+            f.write(str(len(LibList)) + '\n')
             #f.write(' '.join([str(el) for el in reversed(self.PizzaIndexes)]))
-            for i in range(len(self.Libraries)):
-                #bonjour
-
+            for i in range(len(LibList)):
+                BookList = Libraries[LibList[i]].getBooksSent()
+                f.write(LibList[i] + " " + len(BookList) + '\n')
+                for b in BookList:
+                    f.write(b + " ")
+                f.write('\n')
 
         return 0
 
