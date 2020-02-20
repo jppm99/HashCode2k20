@@ -33,9 +33,34 @@ class Library(object):
         self.AvgScore = avgScore
         self.ScoreList = []
         self.Processed = False
+        self.BooksSent = []
+
+        for i in range(len(self.BookList)):
+            self.BookDict.update({i: self.BookList[i]})
+        
+        {k: v for k, v in sorted(self.BookDict.items(), key=lambda item: item[1]).reverse()} #ordem descendente
 
         for x in range(int(ScoreCalcDivisions)):
             self.ScoreList.append(self.calcScore(TotalDays-(x*(TotalDays/ScoreCalcDivisions))))
+
+    def chooseBooks(self, time): #time is the day of the signup start (day)
+        nBooks = self.DebitPerDay * (TotalDays - (time + self.SignupTime))
+        orderedKeysList = self.BookDict.keys()
+        nSent = 0
+        currBook = 0
+
+        while nSent < nBooks:
+            if ScannedBooks[currBook]:
+                currBook += 1
+            else:
+                self.BooksSent.append(currBook)
+                currBook += 1
+                nSent += 1
+
+        return self.BooksSent
+    
+    def getBooksSent(self):
+        return self.BooksSent
 
     def calcScore(self, time):
 
@@ -101,6 +126,13 @@ class Solver(object):
     def write(self):
         global LibList
         print(LibList)
+        path = 'output/' + self.filename + '.out'
+        with open(path, 'w') as f:
+            f.write(str(len(self.Libraries)) + '\n')
+            #f.write(' '.join([str(el) for el in reversed(self.PizzaIndexes)]))
+            for i in range(len(self.Libraries)):
+                #bonjour
+                print()
         return 0
 
     def solve(self):
@@ -155,6 +187,38 @@ class Solver(object):
             day += lib.getSignup()
 
         return 0
+    
+    def solve_b(self):
+        libraryScores = {}
+
+        for i in range(len(self.Libraries)):
+            score = 1000 - self.Libraries[i].SignupTime
+
+            for book in self.Libraries[i].BookList:
+                if ScannedBooks.count(book) == 1:
+                    score -= 1
+                else:
+                    ScannedBooks.append(book)
+
+        libraryScores[i] = score        
+
+        return reversed(sorted(libraryScores.values()))
+
+    def solve_d(self):
+        libraryNBooks = {}
+
+        for i in range(len(self.Libraries)):
+            bookCount = self.Libraries[i].BookCount
+
+            for book in self.Libraries[i].BookList:
+                if ScannedBooks.count(book) == 1:
+                    bookCount -= 1
+                else:
+                    ScannedBooks.append(book)
+        
+            libraryNBooks[i] = bookCount
+
+        return sorted(libraryNBooks.values())
 
 
 def main():
