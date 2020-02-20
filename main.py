@@ -2,7 +2,6 @@ name = ''
 # name of the file to be processed
 
 
-
 class Solver(object):
 
     def __init__(self, filename):
