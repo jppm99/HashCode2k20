@@ -1,6 +1,6 @@
 import statistics
 
-name = 'a_example.txt'
+name = 'd_tough_choices.txt'
 # name of the file to be processed
 
 TotalBooks = 0
@@ -48,21 +48,21 @@ class Library(object):
             self.ScoreList.append(self.calcScore(TotalDays-(x*(TotalDays/ScoreCalcDivisions))))
 
     def chooseBooks(self, time): #time is the day of the signup start (day)
+
+        global ScannedBooks
+
         nBooks = self.DebitPerDay * (TotalDays - (time + self.SignupTime))
         orderedKeysList = self.BookDict.keys()
         nSent = 0
         currBook = 0
 
-        while nSent < nBooks:
-            if ScannedBooks[currBook]:
-                currBook += 1
-            else:
-                self.BooksSent.append(currBook)
-                currBook += 1
+        for key in orderedKeysList:
+            if not ScannedBooks[key]:
+                self.BooksSent.append(key)
                 nSent += 1
-
-        return self.BooksSent
-    
+            if nSent >= nBooks:
+                break
+            
     def getBooksSent(self):
         return self.BooksSent
 
@@ -191,6 +191,8 @@ class Solver(object):
                 break
             LibList.append(lib.id)
             lib.chooseBooks(day)
+            if len(lib.BooksSent) == 0:
+                LibList.remove(lib.id)
             day += lib.getSignup()
                 
 
