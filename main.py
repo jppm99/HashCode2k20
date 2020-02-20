@@ -30,7 +30,11 @@ class Library(object):
         self.DebitPerDay = debit
         self.BookList = books
         self.AvgScore = avgScore
+        self.ScoreList = []
         self.Processed = False
+
+        for x in range(ScoreCalcDivisions):
+            self.ScoreList.append(calcScore(self, TotalDays-(x*(TotalDays/ScoreCalcDivisions))))
 
     def calcScore(self, time):
         if self.Processed:
@@ -50,6 +54,9 @@ class Library(object):
     
     def getSignup(self):
         return self.SignupTime
+
+    def getScores(self):
+        return self.ScoreList
         
 
 class Solver(object):
