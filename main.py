@@ -6,7 +6,7 @@ name = 'a_example.txt'
 TotalBooks = 0
 TotalLibraries = 0
 TotalDays = 0
-ScoreCalcDivisions = 0
+ScoreCalcDivisions = 1
 BookScores = []
 ScannedBooks = []
 
@@ -24,7 +24,11 @@ class Library(object):
         self.DebitPerDay = debit
         self.BookList = books
         self.AvgScore = avgScore
+        self.ScoreList = []
         self.Processed = False
+
+        for x in range(ScoreCalcDivisions):
+            self.ScoreList.append(calcScore(self, TotalDays-(x*(TotalDays/ScoreCalcDivisions))))
 
     def calcScore(self, time):
         return self.AvgScore * self.DebitPerDay * (time - self.SignupTime)
@@ -35,6 +39,9 @@ class Library(object):
     
     def processed(self):
         return self.Processed
+
+    def getScores(self):
+        return self.ScoreList
         
 
 class Solver(object):
