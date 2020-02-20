@@ -1,5 +1,14 @@
+import statistics
+
 name = 'a_example.txt'
 # name of the file to be processed
+
+TotalBooks = 0
+TotalLibraries = 0
+TotalDays = 0
+ScoreCalcDivisions = 0
+BookScores = []
+ScannedBooks = []
 
 def printArrayInLine(array):
     line = ''
@@ -9,23 +18,28 @@ def printArrayInLine(array):
 
 class Library(object):
 
-    def __init__(self, count, signup, debit, books):
+    def __init__(self, count, signup, debit, books, avgScore):
         self.BookCount = count
         self.SignupTime = signup
         self.DebitPerDay = debit
         self.BookList = books
+        self.AvgScore = avgScore
+        self.Processed = False
+
+    def calcScore(self, time):
+        return self.AvgScore * self.DebitPerDay * (time - self.SignupTime)
 
     def write(self):
         print(self.BookCount, self.SignupTime, self.DebitPerDay)
         printArrayInLine(self.BookList)
+    
+    def processed(self):
+        return self.Processed
+        
 
 class Solver(object):
 
     def __init__(self, filename):
-        self.TotalBooks = 0
-        self.TotalLibraries = 0
-        self.TotalDays = 0
-        self.BookScores = []            # access by book index
         self.Libraries = []             # access by library index (duh)
         self.filename = filename
         self.get_input()
@@ -34,14 +48,32 @@ class Solver(object):
         return 0
 
     def get_input(self):
+
+        global TotalBooks, TotalLibraries, TotalDays
+        global ScoreCalcDivisions, BookScores, ScannedBooks
+
         path = 'input/' + self.filename
         with open(path, 'r') as f:
-            [self.TotalBooks, self.TotalLibraries, self.TotalDays] = [int(el) for el in f.readline().split()]
-            self.BookScores = [int(el) for el in f.readline().split()]
-            for i in range(self.TotalLibraries):
+            [TotalBooks, TotalLibraries, TotalDays] = [int(el) for el in f.readline().split()]
+            ScoreCalcDivisions = TotalDays / 3
+            scoresLine = f.readline().split()
+            for el in scoresLine:
+                BookScores.append(int(el))
+                ScannedBooks.append(False)
+            BookScores = [int(el) for el in f.readline().split()]
+            for i in range(TotalLibraries):
                 [count, signup, debit] = [int(el) for el in f.readline().split()]
-                books = [int(el) for el in f.readline().split()]
-                lib = Library(count, signup, debit, books)
+                books = []
+
+                scoreSum = 0
+
+                bookLine = f.readline().split()
+                for book in bookLine:
+                    books.append(book)
+                    scoreSum += BookScores[book]
+                scoreAvg = scoreSum / len(books)
+
+                lib = Library(count, signup, debit, books, scoreAvg)
                 self.Libraries.append(lib)
             
     def write(self):
