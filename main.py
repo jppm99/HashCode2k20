@@ -1,6 +1,6 @@
 import statistics
 
-name = 'd_tough_choices.txt'
+name = '.txt'
 # name of the file to be processed
 
 TotalBooks = 0
@@ -37,22 +37,21 @@ class Library(object):
         self.ScoreList = []
         self.Processed = False
         self.BooksSent = []
-        self.BookDict = {}
-
-        for i in self.BookList:
-            self.BookDict.update({i: BookScores[i]})
         
-        self.BookDict = {k: v for k, v in reversed(sorted(self.BookDict.items(), key=lambda item: item[1]))} #ordem descendente
+        self.BookList = {k: v for k, v in reversed(sorted(self.BookList.items(), key=lambda item: item[1]))} #ordem descendente
 
         for x in range(int(ScoreCalcDivisions)):
             self.ScoreList.append(self.calcScore(TotalDays-(x*(TotalDays/ScoreCalcDivisions))))
+
+
+        #print("Id: " + str(id) + ", score: " + str(self.ScoreList) + ", books: " + str(books))
 
     def chooseBooks(self, time): #time is the day of the signup start (day)
 
         global ScannedBooks
 
         nBooks = self.DebitPerDay * (TotalDays - (time + self.SignupTime))
-        orderedKeysList = self.BookDict.keys()
+        orderedKeysList = self.BookList.keys()
         nSent = 0
         currBook = 0
 
@@ -73,7 +72,7 @@ class Library(object):
         if self.Processed:
             return -1000
         else:
-            return min(self.AvgScore * self.DebitPerDay * ((TotalDays - time) - self.SignupTime), self.AvgScore * self.BookCount)
+            return min(int(self.AvgScore) * int(self.DebitPerDay) * ((int(TotalDays) - int(time)) - int(self.SignupTime)), self.AvgScore * self.BookCount)
 
     def write(self):
         print(self.BookCount, self.SignupTime, self.DebitPerDay)
@@ -97,10 +96,8 @@ class Solver(object):
     def __init__(self, filename):
         self.Libraries = []             # access by library index (duh)
         self.filename = filename
-        self.get_input()
 
     def get_input(self):
-
         global TotalBooks, TotalLibraries, TotalDays
         global ScoreCalcDivisions, BookScores, ScannedBooks
 
@@ -131,7 +128,6 @@ class Solver(object):
         path = 'output/' + self.filename
         with open(path, 'w') as f:
             f.write(str(len(LibList)) + '\n')
-            #f.write(' '.join([str(el) for el in reversed(self.PizzaIndexes)]))
             for i in range(len(LibList)):
                 BookList = self.Libraries[LibList[i]].getBooksSent()
                 f.write(str(LibList[i]) + " " + str(len(BookList)) + '\n')
@@ -210,9 +206,12 @@ class Solver(object):
                 else:
                     ScannedBooks.append(book)
 
-        libraryScores[i] = score        
+            libraryScores[i] = score
 
-        return reversed(sorted(libraryScores.values()))
+        ret = sorted(libraryScores.values())
+        ret.reverse()
+
+        return ret
 
     def solve_d(self):
         libraryNBooks = {}
@@ -228,15 +227,22 @@ class Solver(object):
         
             libraryNBooks[i] = bookCount
 
-        return sorted(libraryNBooks.values())
+        ret = sorted(libraryNBooks.values())
+        ret.reverse()
+
+        return ret
 
 
 def main():
     solver = Solver(name)
+
+    print("inputing")
     solver.get_input()
 
+    print("solving")
     solver.solve()
 
+    print("writing")
     solver.write(LibList)
 
 
